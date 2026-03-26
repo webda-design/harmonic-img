@@ -3,33 +3,27 @@ import { GoogleGenAI, Modality } from "@google/genai";
 const BACKGROUND_PRESETS = {
   nordic: {
     label: "北欧風リビング",
-    prompt:
-      "Scandinavian living room background, light oak wood floor, white walls, natural linen sofa, minimalist wooden furniture, large window with soft diffused natural daylight, a few indoor plants, warm cozy atmosphere, professional interior photography style",
+    prompt: "Scandinavian living room background, light oak wood floor, white walls, natural linen sofa, minimalist wooden furniture, large window with soft diffused natural daylight, a few indoor plants, warm cozy atmosphere, professional interior photography style",
   },
   natural: {
     label: "ナチュラル系",
-    prompt:
-      "Japanese natural style interior background, warm wood tones, neutral beige walls, washi paper shoji screen, tatami-inspired elements, zen minimalist calm atmosphere, soft diffused lighting, professional interior photography",
+    prompt: "Japanese natural style interior background, warm wood tones, neutral beige walls, washi paper shoji screen, tatami-inspired elements, zen minimalist calm atmosphere, soft diffused lighting, professional interior photography",
   },
   modern: {
     label: "モダン・シック",
-    prompt:
-      "modern luxury interior background, deep charcoal gray walls, polished concrete floor, subtle brass accent lamp, monochromatic sophisticated urban aesthetic, professional architectural interior photography",
+    prompt: "modern luxury interior background, deep charcoal gray walls, polished concrete floor, subtle brass accent lamp, monochromatic sophisticated urban aesthetic, professional architectural interior photography",
   },
   cafe: {
     label: "カフェスタイル",
-    prompt:
-      "cozy cafe interior background, warm exposed brick wall, Edison bulb pendant lights, reclaimed wood shelf with plants, vintage industrial style, warm bokeh soft focus background, professional lifestyle photography",
+    prompt: "cozy cafe interior background, warm exposed brick wall, Edison bulb pendant lights, reclaimed wood shelf with plants, vintage industrial style, warm bokeh soft focus background, professional lifestyle photography",
   },
   outdoor: {
     label: "テラス・屋外",
-    prompt:
-      "modern wooden outdoor terrace background, lush green garden, natural bright daylight, fresh open air, subtle landscape in soft focus, professional outdoor furniture photography",
+    prompt: "modern wooden outdoor terrace background, lush green garden, natural bright daylight, fresh open air, subtle landscape in soft focus, professional outdoor furniture photography",
   },
   white_studio: {
     label: "ホワイトスタジオ",
-    prompt:
-      "clean white seamless studio background, soft even professional lighting, subtle floor shadow, pure white backdrop, professional product photography studio setting",
+    prompt: "clean white seamless studio background, soft even professional lighting, subtle floor shadow, pure white backdrop, professional product photography studio setting",
   },
 };
 
@@ -72,7 +66,7 @@ NEW BACKGROUND SCENE: ${preset.prompt}
 Output a single photorealistic composite image where the product seamlessly fits into the new background.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp-image-generation",
+      model: "gemini-3.1-flash-image-preview",
       contents: [
         {
           parts: [

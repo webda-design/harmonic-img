@@ -11,16 +11,16 @@ const PRESETS = [
 ];
 
 const CHECKS = [
-  { id: "light",  label: "光源の位置が自然である" },
-  { id: "scale",  label: "被写体同士のサイズ感が適切である" },
-  { id: "props",  label: "不自然な小物が存在していない" },
-  { id: "shape",  label: "商品の脚・取手など形状が変わっていない" },
-  { id: "color",  label: "商品の色味・素材感が変わっていない" },
+  { id: "light", label: "光源の位置が自然である" },
+  { id: "scale", label: "被写体同士のサイズ感が適切である" },
+  { id: "props", label: "不自然な小物が存在していない" },
+  { id: "shape", label: "商品の脚・取手など形状が変わっていない" },
+  { id: "color", label: "商品の色味・素材感が変わっていない" },
 ];
 
 export default function Home() {
-  const [uploadedImage, setUploadedImage]   = useState(null);
-  const [uploadedMime,  setUploadedMime]    = useState("image/jpeg");
+  const [uploadedImage,  setUploadedImage]  = useState(null);
+  const [uploadedMime,   setUploadedMime]   = useState("image/jpeg");
   const [selectedPreset, setSelectedPreset] = useState("nordic");
   const [generatedImage, setGeneratedImage] = useState(null);
   const [generatedMime,  setGeneratedMime]  = useState("image/png");
@@ -126,45 +126,129 @@ export default function Home() {
         <span style={{ fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.05em" }}>社内限定ツール</span>
       </header>
 
-      {/* Page layout */}
+      {/* Page layout: left(controls) + right(preview+checklist) */}
       <div className="page-layout">
 
-        {/* Left: controls */}
+        {/* ── Left column ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-          {/* Step 1 */}
+          {/* Step 1: Upload + 元画像を一体化したカード */}
           <div className="card">
             <div className="card-header">
               <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Step 1</span>
               <span style={{ fontSize: 12, color: "var(--text-muted)" }}>商品画像をアップロード</span>
             </div>
-            <div style={{ padding: 16 }}>
-              <div
-                className={`upload-zone${isDragging ? " dragging" : ""}`}
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  onChange={(e) => handleFile(e.target.files[0])}
-                />
-                <div style={{ fontSize: 28, marginBottom: 8 }}>{uploadedImage ? "✅" : "📷"}</div>
-                <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>
-                  {uploadedImage
-                    ? <><strong style={{ color: "var(--color-primary-600)" }}>クリックで変更</strong> またはドラッグ</>
-                    : <><strong style={{ color: "var(--color-primary-600)" }}>クリック</strong> またはドラッグ&ドロップ</>}
+
+            {/* アップロード前: ドロップゾーン表示 */}
+            {!uploadedImage && (
+              <div style={{ padding: 16 }}>
+                <div
+                  className={`upload-zone${isDragging ? " dragging" : ""}`}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleFile(e.target.files[0])}
+                  />
+                  <div style={{ fontSize: 32, marginBottom: 10 }}>📷</div>
+                  <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>
+                    <strong style={{ color: "var(--color-primary-600)" }}>クリック</strong> またはドラッグ&ドロップ
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>JPG / PNG / WEBP</div>
                 </div>
-                <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>JPG / PNG / WEBP</div>
               </div>
-            </div>
+            )}
+
+            {/* アップロード後: 画像プレビューをカード内に表示 */}
+            {uploadedImage && (
+              <div>
+                {/* 画像プレビュー（クリックで差し替え可能） */}
+                <div
+                  style={{
+                    position: "relative",
+                    cursor: "pointer",
+                    overflow: "hidden",
+                  }}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  title="クリックして画像を変更"
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleFile(e.target.files[0])}
+                  />
+                  <img
+                    src={uploadedImage}
+                    alt="元画像"
+                    style={{
+                      width: "100%",
+                      display: "block",
+                      maxHeight: 280,
+                      objectFit: "contain",
+                      background: "var(--bg-surface-2)",
+                    }}
+                  />
+                  {/* ホバーオーバーレイ */}
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(0,0,0,0)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "background var(--duration-normal)",
+                  }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(0,0,0,0.35)"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0,0,0,0)"}
+                  >
+                    <span style={{
+                      color: "#fff",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      background: "rgba(0,0,0,0.6)",
+                      padding: "5px 12px",
+                      borderRadius: 99,
+                      opacity: 0,
+                      pointerEvents: "none",
+                    }}
+                      className="change-label"
+                    >
+                      🔄 クリックして変更
+                    </span>
+                  </div>
+                </div>
+                <div style={{
+                  padding: "8px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderTop: "1px solid var(--border-default)",
+                }}>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>元画像</span>
+                  <button
+                    className="btn-ghost"
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{ padding: "4px 10px", fontSize: 11 }}
+                  >
+                    🔄 変更
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Step 2 */}
+          {/* Step 2: 背景スタイル選択 */}
           <div className="card">
             <div className="card-header">
               <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Step 2</span>
@@ -208,70 +292,60 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right: preview + checklist */}
+        {/* ── Right column ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-          {/* Preview */}
-          <div className="preview-grid">
-            <div className="card">
-              <div className="card-header">
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>元画像</span>
-              </div>
-              <div className="img-panel">
-                {uploadedImage
-                  ? <img src={uploadedImage} alt="元画像" />
-                  : <div style={{ textAlign: "center", color: "var(--text-muted)", padding: 32 }}>
-                      <div style={{ fontSize: 32, marginBottom: 8 }}>🖼️</div>
-                      <div style={{ fontSize: 12, lineHeight: 1.7 }}>画像をアップロード<br />すると表示されます</div>
-                    </div>}
-              </div>
+          {/* 生成結果パネル */}
+          <div className="card">
+            <div className="card-header">
+              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>生成後</span>
+              {generatedImage && <span className="badge badge-success">生成完了</span>}
             </div>
-
-            <div className="card">
-              <div className="card-header">
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>生成後</span>
-                {generatedImage && <span className="badge badge-success">完了</span>}
-              </div>
-              <div className="img-panel">
-                {generatedImage
-                  ? <img src={generatedImage} alt="生成後" />
-                  : !isGenerating && (
-                      <div style={{ textAlign: "center", color: "var(--text-muted)", padding: 32 }}>
-                        <div style={{ fontSize: 32, marginBottom: 8 }}>🎨</div>
-                        <div style={{ fontSize: 12, lineHeight: 1.7 }}>背景を生成すると<br />ここに表示されます</div>
-                      </div>
-                    )}
-                {isGenerating && (
-                  <div className="generating-overlay">
-                    <span className="spinner" style={{ width: 32, height: 32 }} />
-                    <span style={{ fontSize: 13, color: "var(--text-muted)" }}>背景を生成中...</span>
-                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>しばらくお待ちください</span>
+            <div className="img-panel" style={{ minHeight: 320 }}>
+              {generatedImage ? (
+                <img src={generatedImage} alt="生成後" />
+              ) : (
+                !isGenerating && (
+                  <div style={{ textAlign: "center", color: "var(--text-muted)", padding: 40 }}>
+                    <div style={{ fontSize: 40, marginBottom: 10 }}>🎨</div>
+                    <div style={{ fontSize: 13, lineHeight: 1.7 }}>
+                      左の画像と背景スタイルを選択し<br />「背景を生成する」を押してください
+                    </div>
                   </div>
-                )}
-              </div>
+                )
+              )}
+              {isGenerating && (
+                <div className="generating-overlay">
+                  <span className="spinner" style={{ width: 36, height: 36 }} />
+                  <span style={{ fontSize: 14, color: "var(--text-body)", fontWeight: 500 }}>背景を生成中...</span>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>しばらくお待ちください（30秒〜1分程度）</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Checklist */}
+          {/* 品質チェックリスト（生成後のみ表示） */}
           {generatedImage && (
             <div className="card">
               <div className="card-header">
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span>🔍</span>
                   <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-heading)" }}>品質チェックリスト</span>
-                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>すべて確認後にダウンロード可能</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>— 全項目確認後にダウンロード可能</span>
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 500, color: allChecked ? "var(--color-success)" : "var(--color-primary-500)" }}>
                   {checkedCount} / {CHECKS.length}
                 </span>
               </div>
 
+              {/* プログレスバー */}
               <div style={{ padding: "10px 20px 0" }}>
                 <div className="progress-bar">
                   <div className="progress-fill" style={{ width: `${progressPct}%` }} />
                 </div>
               </div>
 
+              {/* チェック項目 */}
               <div style={{ paddingTop: 4, paddingBottom: 4 }}>
                 {CHECKS.map((c, i) => (
                   <div key={c.id}>
@@ -289,6 +363,7 @@ export default function Home() {
                 ))}
               </div>
 
+              {/* ダウンロードエリア */}
               <div style={{
                 padding: "14px 20px",
                 borderTop: "1px solid var(--border-default)",
@@ -305,6 +380,7 @@ export default function Home() {
                     width: 8, height: 8, borderRadius: "50%",
                     background: allChecked ? "var(--color-success)" : "var(--border-strong)",
                     transition: "background var(--duration-slow)",
+                    flexShrink: 0,
                   }} />
                   <span style={{ fontSize: 13, color: allChecked ? "var(--color-success)" : "var(--text-muted)" }}>
                     {allChecked ? "全項目確認済み — ダウンロードできます" : "すべての項目にチェックを入れてください"}
@@ -314,7 +390,7 @@ export default function Home() {
                   className="btn-success"
                   onClick={handleDownload}
                   disabled={!allChecked}
-                  style={{ padding: "9px 18px", fontSize: 13 }}
+                  style={{ padding: "9px 18px", fontSize: 13, whiteSpace: "nowrap" }}
                 >
                   ⬇ ダウンロード
                 </button>
