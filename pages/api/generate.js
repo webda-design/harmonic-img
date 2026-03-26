@@ -52,18 +52,25 @@ export default async function handler(req, res) {
 
 TASK: Edit this furniture/product image by replacing ONLY the background with a new scene.
 
-STRICT RULES — follow all without exception:
+STEP 1 — ANALYZE the original image carefully before generating:
+- Identify the camera angle and viewpoint (e.g. slightly above, eye-level, low angle)
+- Identify the camera height relative to the product
+- Identify the vanishing point and perspective lines of the product
+- Identify the direction, color temperature, and intensity of the light source
+
+STEP 2 — GENERATE with the following STRICT RULES (follow all without exception):
 1. PRESERVE the exact shape, silhouette, legs, handles, joints, and all structural details of the furniture/product
 2. PRESERVE the exact color, material texture, finish, and surface appearance of the product
-3. Keep the product in the same position, scale, and perspective
-4. Match the lighting direction and intensity naturally with the new background scene
-5. Ensure realistic depth, perspective, and proportions between product and background
-6. Do NOT add any new objects, decorations, or items that were not in the original image
-7. The final image must look like a professional product lifestyle photograph
+3. Keep the product in the same position, scale, and perspective — do NOT distort or warp the product
+4. CRITICAL — PERSPECTIVE MATCH: The background scene MUST be rendered from the EXACT SAME camera angle, height, and viewpoint as the original product photo. If the product is shot slightly from above, the background floor/room must also recede from that same elevated viewpoint. The vanishing lines of the background must align with those of the product.
+5. CRITICAL — LIGHTING MATCH: The light source direction, intensity, and color temperature in the background must match the lighting on the product exactly.
+6. Ensure realistic depth and proportions — the product must look naturally placed in the scene, not floating or pasted.
+7. Do NOT add any new objects, decorations, or items that were not in the original image
+8. The final image must look like a single professional product lifestyle photograph taken in one shot
 
 NEW BACKGROUND SCENE: ${preset.prompt}
 
-Output a single photorealistic composite image where the product seamlessly fits into the new background.`;
+Output a single photorealistic composite image where the product seamlessly fits into the new background with perfectly matched perspective and lighting.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3.1-flash-image-preview",

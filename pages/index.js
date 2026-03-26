@@ -11,11 +11,13 @@ const PRESETS = [
 ];
 
 const CHECKS = [
-  { id: "light", label: "光源の位置が自然である" },
-  { id: "scale", label: "被写体同士のサイズ感が適切である" },
-  { id: "props", label: "不自然な小物が存在していない" },
-  { id: "shape", label: "商品の脚・取手など形状が変わっていない" },
-  { id: "color", label: "商品の色味・素材感が変わっていない" },
+  { id: "light",   label: "光源の位置が自然である" },
+  { id: "scale",   label: "被写体同士のサイズ感が適切である" },
+  { id: "props",   label: "不自然な小物が存在していない" },
+  { id: "shape",   label: "商品の脚・取手など形状が変わっていない" },
+  { id: "color",   label: "商品の色味・素材感が変わっていない" },
+  { id: "distort", label: "製品自体の画角が不自然に変形していない" },
+  { id: "persp",   label: "背景は製品の画角（カメラアングル・消失点）と合っている" },
 ];
 
 export default function Home() {
