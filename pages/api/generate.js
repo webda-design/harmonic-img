@@ -1,29 +1,35 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI, Modality } from "@google/genai";
 
 const BACKGROUND_PRESETS = {
   nordic: {
     label: "北欧風リビング",
-    prompt: "Scandinavian living room, light oak wood floors, white walls, natural linen textiles, minimalist furniture, large windows with soft natural light, indoor plants, cozy warm atmosphere, professional interior photography",
+    prompt:
+      "Scandinavian living room background, light oak wood floor, white walls, natural linen sofa, minimalist wooden furniture, large window with soft diffused natural daylight, a few indoor plants, warm cozy atmosphere, professional interior photography style",
   },
   natural: {
     label: "ナチュラル系",
-    prompt: "natural Japanese style interior, warm wood tones, washi paper textures, soft neutral colors, bamboo accents, zen minimalist aesthetic, diffused soft lighting, professional interior photography",
+    prompt:
+      "Japanese natural style interior background, warm wood tones, neutral beige walls, washi paper shoji screen, tatami-inspired elements, zen minimalist calm atmosphere, soft diffused lighting, professional interior photography",
   },
   modern: {
     label: "モダン・シック",
-    prompt: "modern luxury interior, dark charcoal walls, polished concrete floors, designer lighting fixtures, monochromatic palette with brass accents, sophisticated urban aesthetic, professional interior photography",
+    prompt:
+      "modern luxury interior background, deep charcoal gray walls, polished concrete floor, subtle brass accent lamp, monochromatic sophisticated urban aesthetic, professional architectural interior photography",
   },
   cafe: {
     label: "カフェスタイル",
-    prompt: "cozy cafe interior background, exposed brick wall, warm Edison bulb lighting, reclaimed wood shelves, greenery, vintage industrial style, soft bokeh background, professional photography",
+    prompt:
+      "cozy cafe interior background, warm exposed brick wall, Edison bulb pendant lights, reclaimed wood shelf with plants, vintage industrial style, warm bokeh soft focus background, professional lifestyle photography",
   },
   outdoor: {
     label: "テラス・屋外",
-    prompt: "modern outdoor terrace, wooden deck, lush garden greenery, natural daylight, fresh open air atmosphere, landscape in background, professional outdoor furniture photography",
+    prompt:
+      "modern wooden outdoor terrace background, lush green garden, natural bright daylight, fresh open air, subtle landscape in soft focus, professional outdoor furniture photography",
   },
   white_studio: {
     label: "ホワイトスタジオ",
-    prompt: "clean white studio background, soft even lighting, subtle shadow, pure white seamless backdrop, professional product photography studio",
+    prompt:
+      "clean white seamless studio background, soft even professional lighting, subtle floor shadow, pure white backdrop, professional product photography studio setting",
   },
 };
 
@@ -46,52 +52,59 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: "GEMINI_API_KEY not set" });
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-preview-image-generation",
+    const ai = new GoogleGenAI({ apiKey });
+
+    const prompt = `You are a professional product photographer and retoucher specializing in furniture and interior design.
+
+TASK: Edit this furniture/product image by replacing ONLY the background with a new scene.
+
+STRICT RULES — follow all without exception:
+1. PRESERVE the exact shape, silhouette, legs, handles, joints, and all structural details of the furniture/product
+2. PRESERVE the exact color, material texture, finish, and surface appearance of the product
+3. Keep the product in the same position, scale, and perspective
+4. Match the lighting direction and intensity naturally with the new background scene
+5. Ensure realistic depth, perspective, and proportions between product and background
+6. Do NOT add any new objects, decorations, or items that were not in the original image
+7. The final image must look like a professional product lifestyle photograph
+
+NEW BACKGROUND SCENE: ${preset.prompt}
+
+Output a single photorealistic composite image where the product seamlessly fits into the new background.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash-exp-image-generation",
+      contents: [
+        {
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType: mimeType || "image/jpeg",
+                data: imageBase64,
+              },
+            },
+          ],
+        },
+      ],
+      config: {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      },
     });
 
-    const prompt = `You are a professional product photographer and image editor.
-
-TASK: Replace ONLY the background of the furniture/product in this image with a new background scene. 
-
-CRITICAL RULES - you MUST follow all of these:
-1. PRESERVE the exact shape, form, legs, handles, color, texture, and material of the furniture/product
-2. Do NOT change any part of the product itself - no modifications to design details
-3. Keep the product in the same position and scale
-4. Match lighting direction naturally with the new background
-5. Ensure realistic perspective and proportions between furniture and background
-6. BACKGROUND STYLE: ${preset.prompt}
-
-Output a high-quality, photorealistic image with the product seamlessly integrated into the new background.`;
-
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          mimeType: mimeType || "image/jpeg",
-          data: imageBase64,
-        },
-      },
-    ]);
-
-    const response = result.response;
     const parts = response.candidates[0].content.parts;
-
-    // 画像パートを探す
     const imagePart = parts.find((p) => p.inlineData);
+
     if (!imagePart) {
-      // テキストのみ返ってきた場合
       const textPart = parts.find((p) => p.text);
       return res.status(500).json({
-        error: "画像生成に失敗しました。モデルがテキストのみ返しました。",
-        detail: textPart?.text || "",
+        error: "画像が生成されませんでした。",
+        detail: textPart?.text || "モデルからの応答に画像が含まれていません",
       });
     }
 
     return res.status(200).json({
       imageBase64: imagePart.inlineData.data,
-      mimeType: imagePart.inlineData.mimeType,
+      mimeType: imagePart.inlineData.mimeType || "image/png",
     });
   } catch (err) {
     console.error("Gemini error:", err);
