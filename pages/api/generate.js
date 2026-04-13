@@ -1,31 +1,7 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 
-const BACKGROUND_PRESETS = {
-  nordic: {
-    label: "北欧風リビング",
-    prompt: "Scandinavian living room background, light oak wood floor, white walls, natural linen sofa, minimalist wooden furniture, large window with soft diffused natural daylight, a few indoor plants, warm cozy atmosphere, professional interior photography style",
-  },
-  natural: {
-    label: "ナチュラル系",
-    prompt: "Japanese natural style interior background, warm wood tones, neutral beige walls, washi paper shoji screen, tatami-inspired elements, zen minimalist calm atmosphere, soft diffused lighting, professional interior photography",
-  },
-  modern: {
-    label: "モダン・シック",
-    prompt: "modern luxury interior background, deep charcoal gray walls, polished concrete floor, subtle brass accent lamp, monochromatic sophisticated urban aesthetic, professional architectural interior photography",
-  },
-  cafe: {
-    label: "カフェスタイル",
-    prompt: "cozy cafe interior background, warm exposed brick wall, Edison bulb pendant lights, reclaimed wood shelf with plants, vintage industrial style, warm bokeh soft focus background, professional lifestyle photography",
-  },
-  outdoor: {
-    label: "テラス・屋外",
-    prompt: "modern wooden outdoor terrace background, lush green garden, natural bright daylight, fresh open air, subtle landscape in soft focus, professional outdoor furniture photography",
-  },
-  white_studio: {
-    label: "ホワイトスタジオ",
-    prompt: "clean white seamless studio background, soft even professional lighting, subtle floor shadow, pure white backdrop, professional product photography studio setting",
-  },
-};
+const BACKGROUND_PROMPT =
+  "Scandinavian living room background, light oak wood floor, white walls, natural linen sofa, minimalist wooden furniture, large window with soft diffused natural daylight, a few indoor plants, warm cozy atmosphere, professional interior photography style";
 
 export const config = {
   api: { bodyParser: { sizeLimit: "10mb" } },
@@ -34,13 +10,8 @@ export const config = {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const { imageBase64, mimeType, backgroundKey } = req.body;
-  if (!imageBase64 || !backgroundKey) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  const preset = BACKGROUND_PRESETS[backgroundKey];
-  if (!preset) return res.status(400).json({ error: "Invalid background key" });
+  const { imageBase64, mimeType } = req.body;
+  if (!imageBase64) return res.status(400).json({ error: "Missing imageBase64" });
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "GEMINI_API_KEY not set" });
@@ -68,7 +39,7 @@ STEP 2 — GENERATE with the following STRICT RULES (follow all without exceptio
 7. Do NOT add any new objects, decorations, or items that were not in the original image
 8. The final image must look like a single professional product lifestyle photograph taken in one shot
 
-NEW BACKGROUND SCENE: ${preset.prompt}
+NEW BACKGROUND SCENE: ${BACKGROUND_PROMPT}
 
 Output a single photorealistic composite image where the product seamlessly fits into the new background with perfectly matched perspective and lighting.`;
 
@@ -78,12 +49,7 @@ Output a single photorealistic composite image where the product seamlessly fits
         {
           parts: [
             { text: prompt },
-            {
-              inlineData: {
-                mimeType: mimeType || "image/jpeg",
-                data: imageBase64,
-              },
-            },
+            { inlineData: { mimeType: mimeType || "image/jpeg", data: imageBase64 } },
           ],
         },
       ],
@@ -99,7 +65,7 @@ Output a single photorealistic composite image where the product seamlessly fits
       const textPart = parts.find((p) => p.text);
       return res.status(500).json({
         error: "画像が生成されませんでした。",
-        detail: textPart?.text || "モデルからの応答に画像が含まれていません",
+        detail: textPart?.text || "",
       });
     }
 
